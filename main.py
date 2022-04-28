@@ -1,57 +1,94 @@
 from terra_sdk.core import Coin 
 from terra_sdk.client.lcd import LCDClient
+
 import const
 import util
 import balance
 import simulation
 import swap
-import decision
-
-
+import time
+import milestone
 
 def main():
+    print(f"bot started")
+    while True:
+        print(f"iteration started")
+        walletBalance = balance.getWalletBalance()
+        virtualLunaBalance=walletBalance.luna+simulation.simulatebLunaToLunaSwap(walletBalance.bluna)
 
-    walletBalance = balance.getWalletBalance()
-    virtualLunaBalance=walletBalance.luna+simulation.simulatebLunaToLunaSwap(walletBalance.bluna)
+        print(f"balances : {walletBalance.bluna} bLuna : {walletBalance.luna}, usd : {walletBalance.usd}")
 
-    cellsCount = len(const.MILESTONES)-1
-    cellBudget = virtualLunaBalance/cellsCount
+        milestones = const.MILESTONES
+        err = milestone.milestonesArrayConsistencyError(milestones)
+        if err is not None:
+            print("invalid milestones data : {err}")
 
-    tobLunaPrice = util.price(cellBudget, simulation.simulateLunaTobLunaSwap(cellBudget))
-    toLunaPrice = util.price(simulation.simulatebLunaToLunaSwap(cellBudget), cellBudget)
+        milestones.reverse()
+        # calcul du prix moyen
+        avgMsBudget = virtualLunaBalance/len(milestones)
+        bLunaLunaPairAvgPrice = simulation.bLunaLunaPairAvgPrice(avgMsBudget)
+        print(f"average price calculated : 1 bluna = {bLunaLunaPairAvgPrice} luna")
 
-    avgPrice = (tobLunaPrice+toLunaPrice)/2
+        # somme de coefficients
+        coeffSum = milestone.milestonesArrayCoefficientsSum(milestones)
+        bLunaExcess = walletBalance.bluna
+        boughtMs = []
+        notBoughtMs = []
+        broke = False
+        for ms in milestones:
+            if broke:
+                print(f"milestone is not bought : {ms}")
+                notBoughtMs.append(ms)
+            relativeWeight = ms.coefficient/coeffSum
+            msLunaInvestment = virtualLunaBalance*relativeWeight
+            if ms.isBought(bLunaExcess, msLunaInvestment):
+                print(f"milestone is bought : {ms}")
+                boughtMs.append(ms)
+                bLunaExcess -= ms.bLunaReturnAmount(msLunaInvestment)
+            else:
+                broke = True
 
-    milestones = const.MILESTONES
-    defaultInterval = const.MILESTONE_DEFAULT_INTERVAL
+        investedLunaVariation = 0
 
-    milestonePairs = decision.convertMilestonesToPairsArray(milestones)
-    wanted = decision.wantedMilestonesCount(milestonePairs, avgPrice)
-    print(f"wanted milestones = {wanted}")
+        for ms in notBoughtMs:
+            if ms.shouldBuy(bLunaLunaPairAvgPrice):
+                print(f"buying milestone at price {bLunaLunaPairAvgPrice} : {ms}")
+                investedLunaVariation += virtualLunaBalance*(ms.coefficient/coeffSum)
 
-    investedProportion = wanted/len(milestonePairs)
-    wantedInvest = investedProportion*virtualLunaBalance
+        for ms in boughtMs:
+            if ms.shouldSell(bLunaLunaPairAvgPrice):
+                print(f"selling milestone at price {bLunaLunaPairAvgPrice} : {ms}")
+                investedLunaVariation -= virtualLunaBalance*(ms.coefficient/coeffSum)
+        
+        print(f"luna balance evolution : {investedLunaVariation}")
 
-    print(wantedInvest)
+        if investedLunaVariation > 0:
+            bLunaToBeBought = simulation.simulateLunaTobLunaSwap(investedLunaVariation)
+            print(f"buying {bLunaToBeBought} bluna")
+            swap.buybLuna(
+                const.terra, 
+                const.MNEMONIC, 
+                const.WALLET_ADDRESS, 
+                const.LUNA_BLUNA_SWAP_CONTRACT_ADDRESS, 
+                const.BLUNA_CONTRACT_ADDRESS, 
+                investedLunaVariation,
+                bLunaToBeBought, 
+                const.SLIPPAGE,
+            )
+        elif investedLunaVariation < 0:
+            investedLunaVariation = -investedLunaVariation 
+            print(f"selling bluna to get back {investedLunaVariation} luna")
+            swap.buyLuna(
+                const.terra,
+                const.MNEMONIC,
+                const.LUNA_BLUNA_SWAP_CONTRACT_ADDRESS,
+                const.BLUNA_CONTRACT_ADDRESS,
+                investedLunaVariation,
+            )
 
-    # lunaToBeTraded = min(const.MAX_TRADE_AMOUNT_LUNA, walletBalance.luna)
-    # bLunaToBeTraded = min(const.MAX_TRADE_AMOUNT_BLUNA, walletBalance.bluna)
-
-    # bLunaReturnAmount = simulation.simulateLunaTobLunaSwap(lunaToBeTraded)
-    # lunaReturnAmount = simulation.simulatebLunaToLunaSwap(bLunaToBeTraded)
-
-    
-    # print(f"it is possible to trade {bLunaToBeTraded} bLuna for {lunaReturnAmount} Luna, resulting a gain of {lunaGain}%")
-    # print(f"it is possible to trade {lunaToBeTraded} Luna for {bLunaReturnAmount} bLuna, resulting a gain of {bLunaGain}%")
-
-    # price = util.price(toBeTraded, bLunaReturnAmount)
-    # print(f"luna to bLuna price : {}")
-
-    # if bLunaGain > const.BUY_PERCENTAGE:
-    #     swap.buybLuna(const.terra, const.MNEMONIC, const.WALLET_ADDRESS, const.LUNA_BLUNA_SWAP_CONTRACT_ADDRESS, const.BLUNA_CONTRACT_ADDRESS, const.TRADE_AMOUNT_LUNA, bLunaReturnAmount, const.SLIPPAGE)
-    # elif lunaGain > const.SELL_PERCENTAGE:
-    #     swap.buyLuna(const.terra, const.MNEMONIC, const.LUNA_BLUNA_SWAP_CONTRACT_ADDRESS, const.BLUNA_CONTRACT_ADDRESS, const.TRADE_AMOUNT_BLUNA)
-    # return 
+        sleepTime = const.SLEEP
+        print(f"sleeping for {sleepTime} seconds...")
+        time.sleep(sleepTime)
 
 if __name__ == "__main__":
     main()

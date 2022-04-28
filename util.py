@@ -14,3 +14,9 @@ def percentageGain(fromValue, toValue):
 
 def price(lunaValue, bLunaValue):
     return lunaValue/bLunaValue
+
+def toLuna(bLunaValue: float, price: float):
+    return bLunaValue/price
+
+def tobLuna(lunaValue: float, price: float):
+    return lunaValue*price

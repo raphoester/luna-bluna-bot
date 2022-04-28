@@ -42,6 +42,13 @@ def simulatebLunaToLunaSwap(toBeTraded):
     return util.fromMicroAmount(simulation["return_amount"])
 
 
+def bLunaLunaPairAvgPrice(lunaBudget: float) -> float:
+    tobLunaPrice = util.price(lunaBudget, simulateLunaTobLunaSwap(lunaBudget))
+    toLunaPrice = util.price(simulatebLunaToLunaSwap(lunaBudget), lunaBudget)
+    bLunaLunaPairAvgPrice = (tobLunaPrice+toLunaPrice)/2
+
+    return bLunaLunaPairAvgPrice
+
 if __name__ == "__main__":
     toBeTraded = 0.1
     bLunaReturnAmount = simulateLunaTobLunaSwap(toBeTraded)

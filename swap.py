@@ -48,14 +48,16 @@ def buybLuna(terra, mnemonic, walletAddress, swapContract, blunaContract, lunaBu
     
     transaction = wallet.create_and_sign_tx(CreateTxOptions(msgs=[executeIncreaseAllowance, executeSwap]))
 
-    return const.terra.tx.broadcast(transaction)
+    return terra.tx.broadcast(transaction)
 
-def buyLuna(terra, mnemonic, swapContract, bLunaContract, bLunaBudget,):
+def buyLuna(terra, mnemonic, swapContract, bLunaContract, bLunaBudget):
     key = MnemonicKey(mnemonic)
     wallet = terra.wallet(key)
 
     swapMsg = {
-        "swap": {}
+        "swap": {
+            "max_spread": "0.05"
+        }
     }
 
     encodedSwapMsg = base64.b64encode(json.dumps(swapMsg).encode("ascii")).decode("ascii")
@@ -67,7 +69,6 @@ def buyLuna(terra, mnemonic, swapContract, bLunaContract, bLunaBudget,):
             "send": {
                 "contract": swapContract,
                 "amount": str(util.toMicroAmount(bLunaBudget)),
-                # "amount": str(util.toMicroAmount(0.001)),
                 "msg": encodedSwapMsg,
             }
         },
@@ -75,7 +76,6 @@ def buyLuna(terra, mnemonic, swapContract, bLunaContract, bLunaBudget,):
     )
 
     transaction = wallet.create_and_sign_tx(CreateTxOptions(msgs=[executeSwap]))
-
     return terra.tx.broadcast(transaction)
 
 
