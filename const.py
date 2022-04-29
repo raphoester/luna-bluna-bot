@@ -19,7 +19,7 @@ WALLET_ADDRESS = os.getenv('WALLET_ADDRESS')
 
 SLIPPAGE = 0.5
 
-SLEEP = 3600
+SLEEP = 3
 
 MILESTONES = [
     milestone.milestone(0.980, 0.985, 25),

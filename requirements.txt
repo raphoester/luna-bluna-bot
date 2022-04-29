@@ -1,3 +1,2 @@
 terra_sdk
-json
-base64
+python-dotenv

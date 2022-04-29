@@ -39,6 +39,8 @@ def main():
             if broke:
                 print(f"milestone is not bought : {ms}")
                 notBoughtMs.append(ms)
+                continue
+        
             relativeWeight = ms.coefficient/coeffSum
             msLunaInvestment = virtualLunaBalance*relativeWeight
             if ms.isBought(bLunaExcess, msLunaInvestment):
@@ -46,6 +48,8 @@ def main():
                 boughtMs.append(ms)
                 bLunaExcess -= ms.bLunaReturnAmount(msLunaInvestment)
             else:
+                print(f"milestone is not bought : {ms}")
+                notBoughtMs.append(ms)
                 broke = True
 
         investedLunaVariation = 0
