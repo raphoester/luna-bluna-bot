@@ -16,7 +16,7 @@ def main():
         walletBalance = balance.getWalletBalance()
         virtualLunaBalance=walletBalance.luna+simulation.simulatebLunaToLunaSwap(walletBalance.bluna)
 
-        print(f"balances : {walletBalance.bluna} bLuna : {walletBalance.luna}, usd : {walletBalance.usd}")
+        print(f"balances : {walletBalance.bluna} bLuna, {walletBalance.luna} luna, {walletBalance.usd} usd")
 
         milestones = const.MILESTONES
         err = milestone.milestonesArrayConsistencyError(milestones)

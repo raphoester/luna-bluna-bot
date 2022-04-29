@@ -11,8 +11,8 @@ load_dotenv()
 LUNA_BLUNA_SWAP_CONTRACT_ADDRESS="terra1j66jatn3k50hjtg2xemnjm8s7y8dws9xqa5y8w"
 BLUNA_CONTRACT_ADDRESS ="terra1kc87mu460fwkqte29rquh4hc20m54fxwtsx7gp"
 
-# terra = LCDClient(chain_id="columbus-5", url="https://lcd.terra.dev") # mainnet
-terra = LCDClient(chain_id="bombay-12", url="https://lcd.terra.dev") # testnet
+terra = LCDClient(chain_id="columbus-5", url="https://lcd.terra.dev") # mainnet
+# terra = LCDClient(chain_id="bombay-12", url="https://lcd.terra.dev") # testnet
 
 MNEMONIC = os.getenv('MNEMONIC')
 WALLET_ADDRESS = os.getenv('WALLET_ADDRESS')
@@ -22,17 +22,9 @@ SLIPPAGE = 0.5
 SLEEP = 3600
 
 MILESTONES = [
-    milestone.milestone(0.955, 0.96, 3),
-    milestone.milestone(0.96, 0.965, 5),
-    milestone.milestone(0.965, 0.97, 5),
-    milestone.milestone(0.97, 0.975, 5),
-    milestone.milestone(0.975, 0.98, 5),
-    milestone.milestone(0.98, 0.985, 5),
-    milestone.milestone(0.985, 0.99, 5),
-    milestone.milestone(0.99, 0.995, 5),
-    milestone.milestone(0.995, 1, 5),
-    milestone.milestone(1, 1.005, 5),
-    milestone.milestone(1.005, 1.01, 5),
-    milestone.milestone(1.01, 1.015, 5),
-    milestone.milestone(1.015, 1.02, 5),
+    milestone.milestone(0.980, 0.985, 25),
+    milestone.milestone(0.985, 0.990, 25),
+    milestone.milestone(0.990, 0.995, 25),
+    milestone.milestone(0.995, 1.000, 25),
 ]
+
