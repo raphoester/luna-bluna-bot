@@ -4,8 +4,9 @@ from dotenv import load_dotenv
 from terra_sdk.client.lcd import LCDClient
 
 load_dotenv()
-
-0# TERRASWAP
+# Core : 1, Info : 2, Debug : 3
+LOGLEVEL=2
+# TERRASWAP
 # LUNA_BLUNA_SWAP_CONTRACT_ADDRESS="terra1jxazgm67et0ce260kvrpfv50acuushpjsz2y0p"
 # ASTROPORT
 LUNA_BLUNA_SWAP_CONTRACT_ADDRESS="terra1j66jatn3k50hjtg2xemnjm8s7y8dws9xqa5y8w"

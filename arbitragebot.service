@@ -1,0 +1,19 @@
+
+[Unit]
+Description=Arbitrage bot container
+After=docker.service
+Requires=docker.service
+
+[Service]
+User=root
+Group=docker
+ExecStartPre=/usr/bin/docker build /home/ubuntu/luna-bluna-bot -t raphoester/luna-bluna-bot:latest
+ExecStart=/usr/bin/docker run --rm --name arbitragebot raphoester/luna-bluna-bot:latest
+ExecStop=/usr/bin/docker stop arbitragebot
+Restart=always
+RestartSec=10s
+Type=exec
+SyslogIdentifier=arbitragebot
+
+[Install]
+WantedBy=multi-user.target

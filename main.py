@@ -8,26 +8,27 @@ import simulation
 import swap
 import time
 import milestone
+import logs
 
 def main():
-    print(f"bot started")
+    logs.Core(f"bot started")
     while True:
-        print(f"iteration started")
+        logs.Debug(f"iteration started")
         walletBalance = balance.getWalletBalance()
         virtualLunaBalance=walletBalance.luna+simulation.simulatebLunaToLunaSwap(walletBalance.bluna)
 
-        print(f"balances : {walletBalance.bluna} bLuna, {walletBalance.luna} luna, {walletBalance.usd} usd")
+        logs.Debug(f"balances : {walletBalance.bluna} bLuna, {walletBalance.luna} luna, {walletBalance.usd} usd")
 
         milestones = const.MILESTONES
         err = milestone.milestonesArrayConsistencyError(milestones)
         if err is not None:
-            print("invalid milestones data : {err}")
+            logs.Core("invalid milestones data : {err}")
 
         milestones.reverse()
         # calcul du prix moyen
         avgMsBudget = virtualLunaBalance/len(milestones)
         bLunaLunaPairAvgPrice = simulation.bLunaLunaPairAvgPrice(avgMsBudget)
-        print(f"average price calculated : 1 bluna = {bLunaLunaPairAvgPrice} luna")
+        logs.Info(f"average price calculated : 1 bluna = {bLunaLunaPairAvgPrice} luna")
 
         # somme de coefficients
         coeffSum = milestone.milestonesArrayCoefficientsSum(milestones)
@@ -37,18 +38,18 @@ def main():
         broke = False
         for ms in milestones:
             if broke:
-                print(f"milestone is not bought : {ms}")
+                logs.Debug(f"milestone is not bought : {ms}")
                 notBoughtMs.append(ms)
                 continue
         
             relativeWeight = ms.coefficient/coeffSum
             msLunaInvestment = virtualLunaBalance*relativeWeight
             if ms.isBought(bLunaExcess, msLunaInvestment):
-                print(f"milestone is bought : {ms}")
+                logs.Debug(f"milestone is bought : {ms}")
                 boughtMs.append(ms)
                 bLunaExcess -= ms.bLunaReturnAmount(msLunaInvestment)
             else:
-                print(f"milestone is not bought : {ms}")
+                logs.Debug(f"milestone is not bought : {ms}")
                 notBoughtMs.append(ms)
                 broke = True
 
@@ -56,19 +57,18 @@ def main():
 
         for ms in notBoughtMs:
             if ms.shouldBuy(bLunaLunaPairAvgPrice):
-                print(f"buying milestone at price {bLunaLunaPairAvgPrice} : {ms}")
                 investedLunaVariation += virtualLunaBalance*(ms.coefficient/coeffSum)
 
         for ms in boughtMs:
             if ms.shouldSell(bLunaLunaPairAvgPrice):
-                print(f"selling milestone at price {bLunaLunaPairAvgPrice} : {ms}")
                 investedLunaVariation -= virtualLunaBalance*(ms.coefficient/coeffSum)
-        
-        print(f"luna balance evolution : {investedLunaVariation}")
+
+        if investedLunaVariation != 0:        
+            logs.Info(f"luna balance evolution : {investedLunaVariation}")
 
         if investedLunaVariation > 0:
             bLunaToBeBought = simulation.simulateLunaTobLunaSwap(investedLunaVariation)
-            print(f"buying {bLunaToBeBought} bluna")
+            logs.Info(f"buying {bLunaToBeBought} bluna")
             swap.buybLuna(
                 const.terra, 
                 const.MNEMONIC, 
@@ -81,7 +81,7 @@ def main():
             )
         elif investedLunaVariation < 0:
             investedLunaVariation = -investedLunaVariation 
-            print(f"selling bluna to get back {investedLunaVariation} luna")
+            logs.Info(f"selling bluna to get back {investedLunaVariation} luna")
             swap.buyLuna(
                 const.terra,
                 const.MNEMONIC,
@@ -91,7 +91,7 @@ def main():
             )
 
         sleepTime = const.SLEEP
-        print(f"sleeping for {sleepTime} seconds...")
+        logs.Debug(f"sleeping for {sleepTime} seconds...")
         time.sleep(sleepTime)
 
 if __name__ == "__main__":
