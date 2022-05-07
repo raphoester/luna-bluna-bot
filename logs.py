@@ -1,5 +1,5 @@
 import const 
-import datetime
+from datetime import datetime
 
 def Debug(message: str):
     Base(message, 1)
