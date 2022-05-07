@@ -1,16 +1,16 @@
 import const 
 import datetime
 
-def Debug(message: string):
+def Debug(message: str):
     Base(message, 1)
 
-def Info(message: string): 
+def Info(message: str): 
     Base(message, 2)
 
-def Core(message: string): 
+def Core(message: str): 
     Base(message, 3)
 
-def Base(message: string, emergency: int):
+def Base(message: str, emergency: int):
     if emergency == 1:
         message = "DEBUG"
     elif emergency == 2:
