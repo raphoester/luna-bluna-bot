@@ -12,15 +12,15 @@ def Core(message: str):
 
 def Base(message: str, emergency: int):
     if emergency == 1:
-        message = "DEBUG"
+        label = "DEBUG"
     elif emergency == 2:
-        message = "INFO"
+        label = "INFO"
     elif emergency == 3:
-        message = "CORE"
+        label = "CORE"
     else:
         return
 
     if emergency >= const.LOGLEVEL:
         now = datetime.now()
         timeString = now.strftime("%d/%m/%Y %H:%M:%S")
-        print(f'[{message}] {timeString} - {message}')
+        print(f'[{label}] {timeString} - {message}')
